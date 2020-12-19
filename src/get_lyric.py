@@ -12,9 +12,9 @@ proxy_list = utils.get_proxy_list(fname="../configs/proxy_list.json")
 def worker_try(song_id):
     try:
         worker(song_id)
-    except BaseException:
+    except BaseException as e:
+        print(song_id, e)
         return 
-    return
 
 def worker(song_id):
     request_lyric_url = "http://%s/lyric?id=%s" % (service_url, song_id)
@@ -37,14 +37,25 @@ def worker(song_id):
     lyric_data = json.loads(lyric_data)
     title_data = json.loads(title_data)
 
+    print(lyric_data)
+    print(title_data)
+
 
     if lyric_data.get("lrc", None) is None:
         return
+    if lyric_data["lrc"].get("lyric") is None:
+        return 
 
     lyric = lyric_data["lrc"]["lyric"]
 
     # filter out timestamp in lyric
     lyric = re.sub(r"\[.*\]", "", lyric)
+
+    if title_data.get("result", None) is None:
+        return
+    
+    if title_data["result"].get("songs", None) is None:
+        return
 
     if title_data["result"]["songs"] == []:
         return
